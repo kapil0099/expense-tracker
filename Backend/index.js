@@ -44,26 +44,36 @@ app.listen(5000, () => {
   console.log("Server running on port 5000");
 });
 
+const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 
 app.post("/login", async (req, res) => {
-  const { email, password } = req.body;
+  try {
+    const { email, password } = req.body;
 
-  const user = await User.findOne({ email });
+    const user = await User.findOne({ email });
 
-  if (!user) return res.status(400).send("User not found");
+    if (!user) {
+      return res.status(400).send("User not found");
+    }
 
-  // (we will secure password later)
-  if (user.password !== password) {
-    return res.status(400).send("Wrong password");
+    // ✅ correct way to compare password
+    const isMatch = await bcrypt.compare(password, user.password);
+
+    if (!isMatch) {
+      return res.status(400).send("Wrong password");
+    }
+
+    const token = jwt.sign(
+      { userId: user._id },
+      process.env.JWT_SECRET
+    );
+
+    res.json({ token });
+
+  } catch (err) {
+    res.status(500).send("Error in login");
   }
-
-  const token = jwt.sign(
-    { userId: user._id },
-    process.env.JWT_SECRET
-  );
-
-  res.json({ token });
 });
 
 const Entry = require('./Entry');
