@@ -7,7 +7,9 @@ const cors = require('cors');
 
 
 const app = express();
-app.use(cors());
+app.use(cors({
+  origin: "https://kapil0099.github.io"
+}));
 app.use(express.json());
 
 // DB connect

@@ -20,7 +20,7 @@ function App() {
 
   const handleLogin = async () => {
     try {
-      const res = await fetch("http://localhost:5000/login", {
+      const res = await fetch("https://expense-tracker-qlia.onrender.com/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, password })
@@ -55,7 +55,7 @@ function App() {
       return;
     }
 
-    await fetch("http://localhost:5000/entry", {
+    await fetch("https://expense-tracker-qlia.onrender.com/entry", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -76,7 +76,7 @@ function App() {
   const getSummary = async (range) => {
     const token = localStorage.getItem("token");
 
-    const res = await fetch(`http://localhost:5000/summary?range=${range}`, {
+    const res = await fetch(`https://expense-tracker-qlia.onrender.com/summary?range=${range}`, {
       headers: {
         Authorization: `Bearer ${token}`
       }
