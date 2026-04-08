@@ -44,7 +44,6 @@ app.listen(5000, () => {
   console.log("Server running on port 5000");
 });
 
-const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 
 app.post("/login", async (req, res) => {
