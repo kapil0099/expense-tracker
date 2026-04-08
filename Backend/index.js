@@ -5,6 +5,7 @@ const bcrypt = require('bcrypt');
 const User = require('./User');
 const cors = require('cors');
 const auth = require("./auth");
+const jwt = require("jsonwebtoken");
 
 
 const app = express();
@@ -44,11 +45,41 @@ app.listen(5000, () => {
   console.log("Server running on port 5000");
 });
 
-const jwt = require("jsonwebtoken");
+// SIGNUP
+app.post('/signup', async (req, res) => {
+  try {
+    const { email, password } = req.body;
 
+    if (!email || !password) {
+      return res.status(400).send("Email and password required");
+    }
+
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    const user = new User({
+      email,
+      password: hashedPassword
+    });
+
+    await user.save();
+
+    res.send("User created");
+
+  } catch (err) {
+    console.log(err);  // 👈 VERY IMPORTANT
+    res.status(500).send("Error in signup");
+  }
+});
+
+
+// LOGIN
 app.post("/login", async (req, res) => {
   try {
     const { email, password } = req.body;
+
+    if (!email || !password) {
+      return res.status(400).send("Email and password required");
+    }
 
     const user = await User.findOne({ email });
 
@@ -56,7 +87,6 @@ app.post("/login", async (req, res) => {
       return res.status(400).send("User not found");
     }
 
-    // ✅ correct way to compare password
     const isMatch = await bcrypt.compare(password, user.password);
 
     if (!isMatch) {
@@ -71,6 +101,7 @@ app.post("/login", async (req, res) => {
     res.json({ token });
 
   } catch (err) {
+    console.log(err);  // 👈 VERY IMPORTANT
     res.status(500).send("Error in login");
   }
 });
