@@ -4,6 +4,7 @@ const mongoose = require('mongoose');
 const bcrypt = require('bcrypt');
 const User = require('./User');
 const cors = require('cors');
+const auth = require("./auth");
 
 
 const app = express();
@@ -43,23 +44,23 @@ app.listen(5000, () => {
   console.log("Server running on port 5000");
 });
 
-const jwt = require('jsonwebtoken');
+const jwt = require("jsonwebtoken");
 
-app.post('/login', async (req, res) => {
+app.post("/login", async (req, res) => {
   const { email, password } = req.body;
 
   const user = await User.findOne({ email });
 
   if (!user) return res.status(400).send("User not found");
 
-  const isMatch = await bcrypt.compare(password, user.password);
-
-  if (!isMatch) return res.status(400).send("Wrong password");
+  // (we will secure password later)
+  if (user.password !== password) {
+    return res.status(400).send("Wrong password");
+  }
 
   const token = jwt.sign(
-    { email: user.email },
-    "secret123",
-    { expiresIn: "7d" }
+    { userId: user._id },
+    process.env.JWT_SECRET
   );
 
   res.json({ token });
@@ -68,7 +69,7 @@ app.post('/login', async (req, res) => {
 const Entry = require('./Entry');
 const authMiddleware = require('./auth');
 
-app.post('/entry', authMiddleware, async (req, res) => {
+app.post('/entry', auth, async (req, res) => {
   const { type, amount, category } = req.body;
 
   const entry = new Entry({
@@ -85,7 +86,7 @@ app.post('/entry', authMiddleware, async (req, res) => {
 
 
 
-app.get('/summary', authMiddleware, async (req, res) => {
+app.get('/summary', auth, async (req, res) => {
   const range = req.query.range; // today, week, month
 
   let startDate = new Date();
